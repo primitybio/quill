@@ -25,7 +25,6 @@ import './unit/formats/list';
 import './unit/formats/bold';
 
 import './unit/modules/clipboard';
-import './unit/modules/history';
 import './unit/modules/keyboard';
 import './unit/modules/toolbar';
 

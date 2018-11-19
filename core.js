@@ -11,7 +11,6 @@ import Scroll from './blots/scroll';
 import TextBlot from './blots/text';
 
 import Clipboard from './modules/clipboard';
-import History from './modules/history';
 import Keyboard from './modules/keyboard';
 
 Quill.register({
@@ -26,7 +25,6 @@ Quill.register({
   'blots/text'         : TextBlot,
 
   'modules/clipboard'  : Clipboard,
-  'modules/history'    : History,
   'modules/keyboard'   : Keyboard
 });
 

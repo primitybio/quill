@@ -83,7 +83,6 @@ class Quill {
     this.theme = new this.options.theme(this, this.options);
     this.keyboard = this.theme.addModule('keyboard');
     this.clipboard = this.theme.addModule('clipboard');
-    this.history = this.theme.addModule('history');
     this.theme.init();
     this.emitter.on(Emitter.events.EDITOR_CHANGE, (type) => {
       if (type === Emitter.events.TEXT_CHANGE) {
@@ -99,7 +98,6 @@ class Quill {
     });
     let contents = this.clipboard.convert(`<div class='ql-editor' style="white-space: normal;">${html}<p><br></p></div>`);
     this.setContents(contents);
-    this.history.clear();
     if (this.options.placeholder) {
       this.root.setAttribute('data-placeholder', this.options.placeholder);
     }
@@ -373,8 +371,7 @@ function expandConfig(container, userConfig) {
     container: container,
     modules: {
       clipboard: true,
-      keyboard: true,
-      history: true
+      keyboard: true
     }
   }, userConfig);
   if (!userConfig.theme || userConfig.theme === Quill.DEFAULTS.theme) {
