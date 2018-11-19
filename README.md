@@ -1,3 +1,14 @@
+**Note:** this is a fork of quill with a set of patches used by Primity. They're maintained on this branch, `primity-patches`. When a new Quill version is released, those patches are rebased onto the new Quill release.
+
+Versions of Quill are released like this
+
+* `@primitybio/quill@1.3.5-primity.1`
+* `@primitybio/quill@1.3.6-primity.1`
+
+If a new patch was added 1.3.6 would become
+
+* `@primitybio/quill@1.3.6-primity.2`
+
 <h1 align="center">
   <a href="https://quilljs.com/" title="Quill">Quill Rich Text Editor</a>
 </h1>
