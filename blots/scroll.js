@@ -160,6 +160,7 @@ class Scroll extends Parchment.Scroll {
     super.update(mutations.concat([]));   // pass copy
     if (mutations.length > 0) {
       this.emitter.emit(Emitter.events.SCROLL_UPDATE, source, mutations);
+      this.emitter.emit(Emitter.events.SCROLL_AFTER_UPDATE, source, mutations);
     }
   }
 }
