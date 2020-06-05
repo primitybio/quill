@@ -121,7 +121,7 @@ class Quill {
   }
 
   deleteText(index, length, source) {
-    [index, length, , source] = overload(index, length, source);
+    [index, length, , , source] = overload(index, length, source);
     return modify.call(this, () => {
       return this.editor.deleteText(index, length);
     }, source, index, -1*length);
@@ -164,7 +164,7 @@ class Quill {
 
   formatLine(index, length, name, value, source) {
     let formats;
-    [index, length, formats, source] = overload(index, length, name, value, source);
+    [index, length, , formats, source] = overload(index, length, name, value, source);
     return modify.call(this, () => {
       return this.editor.formatLine(index, length, formats);
     }, source, index, 0);
@@ -172,7 +172,7 @@ class Quill {
 
   formatText(index, length, name, value, source) {
     let formats;
-    [index, length, formats, source] = overload(index, length, name, value, source);
+    [index, length, , formats, source] = overload(index, length, name, value, source);
     return modify.call(this, () => {
       return this.editor.formatText(index, length, formats);
     }, source, index, 0);
@@ -260,7 +260,7 @@ class Quill {
 
   insertText(index, text, name, value, source) {
     let formats;
-    [index, , formats, source] = overload(index, 0, name, value, source);
+    [index, , , formats, source] = overload(index, 0, name, value, source);
     return modify.call(this, () => {
       return this.editor.insertText(index, text, formats);
     }, source, index, text.length);
@@ -287,7 +287,7 @@ class Quill {
   }
 
   removeFormat(index, length, source) {
-    [index, length, , source] = overload(index, length, source);
+    [index, length, , , source] = overload(index, length, source);
     return modify.call(this, () => {
       return this.editor.removeFormat(index, length);
     }, source, index);
@@ -317,8 +317,9 @@ class Quill {
     if (index == null) {
       this.selection.setRange(null, length || Quill.sources.API);
     } else {
-      [index, length, , source] = overload(index, length, source);
-      this.selection.setRange(new Range(index, length), source);
+      let reversed;
+      [index, length, reversed, , source] = overload(index, length, source);
+      this.selection.setRange(new Range(index, length, reversed), source);
       if (source !== Emitter.sources.SILENT) {
         this.selection.scrollIntoView(this.scrollingContainer);
       }
@@ -453,12 +454,13 @@ function modify(modifier, source, index, shift) {
 
 function overload(index, length, name, value, source) {
   let formats = {};
+  let reversed = false;
   if (typeof index.index === 'number' && typeof index.length === 'number') {
     // Allow for throwaway end (used by insertText/insertEmbed)
     if (typeof length !== 'number') {
-      source = value, value = name, name = length, length = index.length, index = index.index;
+      source = value, value = name, name = length, length = index.length, reversed = !!index.reversed, index = index.index;
     } else {
-      length = index.length, index = index.index;
+      length = index.length, index = index.index, reversed = !!index.reversed;
     }
   } else if (typeof length !== 'number') {
     source = value, value = name, name = length, length = 0;
@@ -476,7 +478,7 @@ function overload(index, length, name, value, source) {
   }
   // Handle optional source
   source = source || Emitter.sources.API;
-  return [index, length, formats, source];
+  return [index, length, reversed, formats, source];
 }
 
 function shiftRange(range, index, length, source) {

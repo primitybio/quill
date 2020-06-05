@@ -306,25 +306,48 @@ function makeEmbedArrowHandler(key, shiftKey) {
     altKey: null,
     [where]: /^$/,
     handler: function(range) {
-      let index = range.index;
-      if (key === Keyboard.keys.RIGHT) {
-        index += (range.length + 1);
-      }
-      const [leaf, ] = this.quill.getLeaf(index);
-      if (!(leaf instanceof Parchment.Embed)) return true;
-      if (key === Keyboard.keys.LEFT) {
-        if (shiftKey) {
-          this.quill.setSelection(range.index - 1, range.length + 1, Quill.sources.USER);
+      let kbd = Object.assign({}, range);
+
+      if (shiftKey) {
+        if (kbd.reversed) {
+          if (key === Keyboard.keys.LEFT) {
+            kbd.index -= 1, kbd.length += 1;
+          } else {
+            kbd.index += 1, kbd.length -= 1;
+            if (kbd.length < 0) kbd.index -= 1, kbd.length = 1, kbd.reversed = false;
+          }
         } else {
-          this.quill.setSelection(range.index - 1, Quill.sources.USER);
+          if (key === Keyboard.keys.LEFT) {
+            kbd.length -= 1;
+            if (kbd.length < 0) kbd.index -= 1, kbd.length = 1, kbd.reversed = true;
+          } else {
+            kbd.length += 1;
+          }
         }
       } else {
-        if (shiftKey) {
-          this.quill.setSelection(range.index, range.length + 1, Quill.sources.USER);
+        if (kbd.length) {
+          if (key !== Keyboard.keys.LEFT) kbd.index += kbd.length;
         } else {
-          this.quill.setSelection(range.index + range.length + 1, Quill.sources.USER);
+          kbd.index += key === Keyboard.keys.LEFT ? -1 : 1;
         }
+        kbd.length = 0;
+        kbd.reversed = false;
       }
+
+      let index;
+      if (kbd.index < range.index) {
+        index = range.index;
+      } else if (kbd.index > range.index) {
+        index = kbd.index;
+      } else if (kbd.index + kbd.length < range.index + range.length) {
+        index = range.index + range.length;
+      } else {
+        index = kbd.index + kbd.length;
+      }
+
+      const [leaf, ] = this.quill.getLeaf(index);
+      if (!(leaf instanceof Parchment.Embed)) return true;
+      this.quill.setSelection(kbd, Quill.sources.USER);
       return false;
     }
   };
