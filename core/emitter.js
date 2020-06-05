@@ -47,6 +47,7 @@ class Emitter extends EventEmitter {
 
 Emitter.events = {
   EDITOR_CHANGE        : 'editor-change',
+  SCROLL_AFTER_UPDATE  : 'scroll-after-update',
   SCROLL_BEFORE_UPDATE : 'scroll-before-update',
   SCROLL_OPTIMIZE      : 'scroll-optimize',
   SCROLL_UPDATE        : 'scroll-update',
