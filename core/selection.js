@@ -8,9 +8,10 @@ let debug = logger('quill:selection');
 
 
 class Range {
-  constructor(index, length = 0) {
+  constructor(index, length = 0, reversed = false) {
     this.index = index;
     this.length = length;
+    this.reversed = reversed;
   }
 }
 
@@ -159,7 +160,7 @@ class Selection {
     if (selection == null || selection.rangeCount <= 0) return null;
     let nativeRange = selection.getRangeAt(0);
     if (nativeRange == null) return null;
-    let range = this.normalizeNative(nativeRange);
+    let range = this.normalizeNative(nativeRange, selection);
     debug.info('getNativeRange', range);
     return range;
   }
@@ -192,19 +193,21 @@ class Selection {
         return index + blot.index(node, offset);
       }
     });
+    let reversed = indexes.length > 1 && indexes[0] > indexes[1];
     let end = Math.min(Math.max(...indexes), this.scroll.length() - 1);
     let start = Math.min(end, ...indexes);
-    return new Range(start, end-start);
+    return new Range(start, end-start, reversed);
   }
 
-  normalizeNative(nativeRange) {
+  normalizeNative(nativeRange, selection) {
     if (!contains(this.root, nativeRange.startContainer) ||
         (!nativeRange.collapsed && !contains(this.root, nativeRange.endContainer))) {
       return null;
     }
+    // selection is used instead of range since it can be reversed
     let range = {
-      start: { node: nativeRange.startContainer, offset: nativeRange.startOffset },
-      end: { node: nativeRange.endContainer, offset: nativeRange.endOffset },
+      start: { node: selection.anchorNode, offset: selection.anchorOffset },
+      end: { node: selection.focusNode, offset: selection.focusOffset },
       native: nativeRange
     };
     [range.start, range.end].forEach(function(position) {
@@ -235,9 +238,8 @@ class Selection {
       [node, offset] = leaf.position(offset, i !== 0);
       args.push(node, offset);
     });
-    if (args.length < 2) {
-      args = args.concat(args);
-    }
+    if (args.length < 2) args = args.concat(args);
+    if (range.reversed) args = [args[2], args[3], args[0], args[1]];
     return args;
   }
 
@@ -287,9 +289,9 @@ class Selection {
         }
         let range = document.createRange();
         range.setStart(startNode, startOffset);
-        range.setEnd(endNode, endOffset);
         selection.removeAllRanges();
         selection.addRange(range);
+        selection.extend(endNode, endOffset);
       }
     } else {
       selection.removeAllRanges();
