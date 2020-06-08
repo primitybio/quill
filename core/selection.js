@@ -100,8 +100,12 @@ class Selection {
     let nativeRange = this.getNativeRange();
     if (nativeRange == null || !nativeRange.native.collapsed || Parchment.query(format, Parchment.Scope.BLOCK)) return;
     if (nativeRange.start.node !== this.cursor.textNode) {
-      let blot = Parchment.find(nativeRange.start.node, false);
-      if (blot == null) return;
+      let blot = Parchment.find(nativeRange.start.node, true);
+      if (
+        !blot ||
+        blot.domNode !== nativeRange.start.node &&
+        !(blot instanceof Parchment.Embed)
+      ) return;
       // TODO Give blot ability to not split
       if (blot instanceof Parchment.Leaf) {
         let after = blot.split(nativeRange.start.offset);
