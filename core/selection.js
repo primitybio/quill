@@ -214,9 +214,13 @@ class Selection {
       return null;
     }
     // selection is used instead of range since it can be reversed
+    let startNode = selection ? selection.anchorNode : nativeRange.startContainer;
+    let startOffset = selection ? selection.anchorOffset : nativeRange.startOffset;
+    let endNode = selection ? selection.focusNode : nativeRange.endContainer;
+    let endOffset = selection ? selection.focusOffset : nativeRange.endOffset;
     let range = {
-      start: { node: selection.anchorNode, offset: selection.anchorOffset },
-      end: { node: selection.focusNode, offset: selection.focusOffset },
+      start: { node: startNode, offset: startOffset },
+      end: { node: endNode, offset: endOffset },
       native: nativeRange
     };
     [range.start, range.end].forEach(function(position) {

@@ -53,11 +53,38 @@ const STYLE_ATTRIBUTORS = [
   return memo;
 }, {});
 
+// Huge thanks to the Range king, Tim Down: https://stackoverflow.com/a/12924488
+function getMouseEventCaretRange(e) {
+  let range;
+  let x = e.clientX;
+  let y = e.clientY;
+
+  // Try Mozilla's rangeOffset and rangeParent properties,
+  // which are exactly what we want
+  if (typeof e.rangeParent != "undefined") {
+    range = document.createRange();
+    range.setStart(e.rangeParent, e.rangeOffset);
+    range.collapse(true);
+  // Try the standards-based way next
+  } else if (document.caretPositionFromPoint) {
+    let pos = document.caretPositionFromPoint(x, y);
+    range = document.createRange();
+    range.setStart(pos.offsetNode, pos.offset);
+    range.collapse(true);
+  // Next, the WebKit way
+  } else if (document.caretRangeFromPoint) {
+    range = document.caretRangeFromPoint(x, y);
+  }
+
+  return range;
+}
+
 
 class Clipboard extends Module {
   constructor(quill, options) {
     super(quill, options);
     this.quill.root.addEventListener('paste', this.onPaste.bind(this));
+    this.quill.root.addEventListener('drop', this.onDrop.bind(this));
     this.container = this.quill.addContainer('ql-clipboard');
     this.container.setAttribute('contenteditable', true);
     this.container.setAttribute('tabindex', -1);
@@ -120,6 +147,32 @@ class Clipboard extends Module {
       this.quill.scrollingContainer.scrollTop = scrollTop;
       this.quill.focus();
     }, 1);
+  }
+
+  onDrop(e) {
+    if (e.defaultPrevented || !this.quill.isEnabled()) return;
+    if (!e.dataTransfer.types.includes('text/html')) return;
+    let html = e.dataTransfer.getData('text/html');
+    let deleteRange = this.quill.getSelection();
+    let deleteDelta = new Delta();
+    if (deleteRange) deleteDelta = deleteDelta.retain(deleteRange.index).delete(deleteRange.length);
+    let insertNativeRange = getMouseEventCaretRange(e);
+    if (!insertNativeRange) return;
+    let insertNormalizedRange = this.quill.selection.normalizeNative(insertNativeRange);
+    if (!insertNormalizedRange) return;
+    let insertRange = this.quill.selection.normalizedToRange(insertNormalizedRange);
+    let insertDelta = new Delta().retain(insertRange.index);
+    let scrollTop = this.quill.scrollingContainer.scrollTop;
+
+    e.preventDefault();
+    insertDelta = insertDelta.concat(this.convert(html));
+    let delta = deleteDelta.compose(deleteDelta.transform(insertDelta));
+    this.quill.updateContents(delta, Quill.sources.USER);
+
+    // range.length contributes to delta.length()
+    let deleteLength = deleteRange ? deleteRange.length : 0;
+    this.quill.setSelection(delta.length() - deleteLength, Quill.sources.SILENT);
+    this.quill.scrollingContainer.scrollTop = scrollTop;
   }
 
   prepareMatching() {
