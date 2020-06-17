@@ -46,13 +46,15 @@ class Emitter extends EventEmitter {
 }
 
 Emitter.events = {
-  EDITOR_CHANGE        : 'editor-change',
-  SCROLL_AFTER_UPDATE  : 'scroll-after-update',
-  SCROLL_BEFORE_UPDATE : 'scroll-before-update',
-  SCROLL_OPTIMIZE      : 'scroll-optimize',
-  SCROLL_UPDATE        : 'scroll-update',
-  SELECTION_CHANGE     : 'selection-change',
-  TEXT_CHANGE          : 'text-change'
+  EDITOR_CHANGE          : 'editor-change',
+  SCROLL_BEFORE_UPDATE   : 'scroll-before-update',
+  SCROLL_UPDATE          : 'scroll-update',
+  SCROLL_AFTER_UPDATE    : 'scroll-after-update',
+  SCROLL_BEFORE_OPTIMIZE : 'scroll-before-optimize',
+  SCROLL_OPTIMIZE        : 'scroll-optimize',
+  SCROLL_AFTER_OPTIMIZE  : 'scroll-after-optimize',
+  SELECTION_CHANGE       : 'selection-change',
+  TEXT_CHANGE            : 'text-change'
 };
 Emitter.sources = {
   API    : 'api',
